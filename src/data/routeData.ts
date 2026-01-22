@@ -38,7 +38,7 @@ export const routes: Route[] = [
     desc: "Via Canal Road & Jail Road",
     color: "#ef4444",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.495, lng: 74.305, name: "Quaid-e-Azam Campus" },
       { lat: 31.5035, lng: 74.318, name: "New Campus Bridge" },
       { lat: 31.509, lng: 74.325, name: "Faisal Town" },
@@ -58,7 +58,7 @@ export const routes: Route[] = [
     desc: "Via Raiwind Road & Jubilee",
     color: "#3b82f6",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.485, lng: 74.290, name: "Old Campus Gate" },
       { lat: 31.475, lng: 74.275, name: "Wahdat Road" },
       { lat: 31.465, lng: 74.260, name: "Allama Iqbal Town" },
@@ -79,7 +79,7 @@ export const routes: Route[] = [
     desc: "Via North Campus & Khatame Nabuwat",
     color: "#10b981",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.49450, lng: 74.29200, name: "North Gate" },
       { lat: 31.49850, lng: 74.28950, name: "Lahore Fort Road" },
       { lat: 31.50250, lng: 74.28650, name: "Data Darbar" },
@@ -96,7 +96,7 @@ export const routes: Route[] = [
     desc: "Via Canal Bank Road & Johar Town",
     color: "#f59e0b",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.488, lng: 74.310, name: "Canal Bank Road" },
       { lat: 31.485, lng: 74.320, name: "Thal Canal Bridge" },
       { lat: 31.480, lng: 74.330, name: "PCSIR" },
@@ -116,7 +116,7 @@ export const routes: Route[] = [
     desc: "Via Gujranwala Road & Northern Bypass",
     color: "#8b5cf6",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.500, lng: 74.295, name: "Gujranwala Road Junction" },
       { lat: 31.510, lng: 74.292, name: "Barkat Market" },
       { lat: 31.520, lng: 74.288, name: "Chauburji" },
@@ -143,7 +143,7 @@ export const routes: Route[] = [
     desc: "Via Sheikhupura Road & Motorway Access",
     color: "#ec4899",
     waypoints: [
-      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport | Developed by Muhammad" },
+      { lat: 31.49124295709786, lng: 74.29731155759698, name: "PU Transport" },
       { lat: 31.495, lng: 74.290, name: "Sheikhupura Road Junction" },
       { lat: 31.500, lng: 74.280, name: "Ichhra" },
       { lat: 31.510, lng: 74.270, name: "Samanabad" },
