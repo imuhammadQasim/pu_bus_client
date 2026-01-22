@@ -5,6 +5,8 @@ import { Route, OPERATING_HOURS } from '@/data/routeData';
 import { RouteCard } from './RouteCard';
 import { useSearch } from '@/hooks/useSearch';
 
+import { useReverseGeocoding } from '@/hooks/useReverseGeocoding';
+
 interface SidebarProps {
   routes: Route[];
   activeRouteId: number | null;
@@ -23,6 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   operatingStatus,
 }) => {
   const { query, setQuery, suggestions, isLoading, search, clearSearch } = useSearch();
+  const { address, isGeocoding } = useReverseGeocoding(userLocation?.lat, userLocation?.lng);
   const [sidebarHeight, setSidebarHeight] = useState('50vh');
 
   const handleSearch = async () => {
@@ -110,7 +113,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-green-800 dark:text-green-200">Your Location</p>
               <p className="text-xs text-green-600 dark:text-green-400 truncate">
-                {userLocation.lat.toFixed(5)}, {userLocation.lng.toFixed(5)}
+                {isGeocoding ? (
+                  <span className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Finding address...
+                  </span>
+                ) : (
+                  address || (userLocation ? `${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}` : '')
+                )}
               </p>
             </div>
           </div>

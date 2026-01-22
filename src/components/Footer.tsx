@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
       </div>
       <div className="flex items-center gap-2 font-medium">
         <span>Powered by</span>
-        <strong className="text-primary font-bold">PU Transport Wing</strong>
+        <strong className="text-primary font-bold">PU Transport | Developed by Muhammad</strong>
       </div>
     </footer>
   );
