@@ -1,15 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-
 @layer base {
   :root {
     /* Punjab University Theme */
-    --pu-navy: 222.2 72% 25%;
-    --pu-navy-dark: 222.2 72% 18%;
-    --pu-gold: 43 96% 56%;
+    --pu-navy: 211 100% 26%;
+    --pu-navy-dark: 211 100% 18%;
+    --pu-bronze: 25 48% 61%;
+    --pu-gold: 45 100% 82%;
+    --pu-red: 0 100% 25%;
     
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
@@ -20,8 +22,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 72% 25%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 211 100% 26%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -29,8 +31,8 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 100% 82%;
+    --accent-foreground: 211 100% 26%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -60,8 +62,8 @@
     --shadow-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217 91% 60%) 100%);
-    --gradient-loading: linear-gradient(135deg, hsl(212 82% 26%) 0%, hsl(222 72% 25%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(211 100% 40%) 100%);
+    --gradient-loading: linear-gradient(135deg, hsl(211 100% 20%) 0%, hsl(211 100% 26%) 100%);
     
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -92,8 +94,8 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 100% 82%;
+    --accent-foreground: 211 100% 26%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;

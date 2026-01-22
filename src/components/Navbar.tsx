@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, MoreVertical, MapPin, Loader2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu, MapPin, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -58,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onMenuToggle}
             className="text-white text-xl p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
-            <MoreVertical className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
           </button>
         )}
 
