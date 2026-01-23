@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { ChevronDown, Check, MapPin, Clock, PersonStanding, Bike, Car } from 'lucide-react';
-import { Route } from '@/data/routeData';
-import { getDistance, calculateTravelTime } from '@/hooks/useGeolocation';
+import React, { useState } from "react";
+import {
+  ChevronDown,
+  Check,
+  MapPin,
+  Clock,
+  PersonStanding,
+  Bike,
+  Car,
+} from "lucide-react";
+import { Route } from "@/data/routeData";
+import { getDistance, calculateTravelTime } from "@/hooks/useGeolocation";
 
 interface RouteCardProps {
   route: Route;
+  displayIndex: number;
   isActive: boolean;
   onToggle: () => void;
   isOperating: boolean;
@@ -13,6 +22,7 @@ interface RouteCardProps {
 
 export const RouteCard: React.FC<RouteCardProps> = ({
   route,
+  displayIndex,
   isActive,
   onToggle,
   isOperating,
@@ -21,18 +31,23 @@ export const RouteCard: React.FC<RouteCardProps> = ({
   // Calculate nearest stop and travel times
   const getNearestStop = () => {
     if (!userLocation) return null;
-    
+
     let nearest = null;
     let minDist = Infinity;
-    
+
     route.waypoints.forEach((wp) => {
-      const dist = getDistance(userLocation.lat, userLocation.lng, wp.lat, wp.lng);
+      const dist = getDistance(
+        userLocation.lat,
+        userLocation.lng,
+        wp.lat,
+        wp.lng,
+      );
       if (dist < minDist) {
         minDist = dist;
         nearest = { ...wp, distance: dist };
       }
     });
-    
+
     return nearest;
   };
 
@@ -43,13 +58,13 @@ export const RouteCard: React.FC<RouteCardProps> = ({
       const minutesOffset = idx * 12;
       const now = new Date();
       const eta = new Date(now.getTime() + minutesOffset * 60 * 1000);
-      const etaStr = eta.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
+      const etaStr = eta.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: true,
       });
 
-      const statusClass = idx === 0 ? 'current' : 'future';
+      const statusClass = idx === 0 ? "current" : "future";
 
       return { ...wp, eta: etaStr, statusClass };
     });
@@ -61,7 +76,9 @@ export const RouteCard: React.FC<RouteCardProps> = ({
     <div className="mb-2.5 relative overflow-hidden rounded-lg">
       <div
         className={`bg-card rounded-lg shadow-sm border-2 transition-all ${
-          isActive ? 'border-primary shadow-lg' : 'border-transparent hover:shadow-md hover:-translate-y-0.5'
+          isActive
+            ? "border-primary shadow-lg"
+            : "border-transparent hover:shadow-md hover:-translate-y-0.5"
         }`}
       >
         {/* Header */}
@@ -75,7 +92,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
               className="w-12 h-12 rounded-full flex items-center justify-center font-bold font-poppins text-base text-white shadow-md transition-transform hover:scale-105"
               style={{ backgroundColor: route.color }}
             >
-              {route.id}
+              {displayIndex}
             </div>
 
             {/* Details */}
@@ -91,18 +108,20 @@ export const RouteCard: React.FC<RouteCardProps> = ({
           <div
             className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ml-2 whitespace-nowrap ${
               isOperating
-                ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
-                : 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
+                ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300"
+                : "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300"
             }`}
           >
-            {isOperating && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
-            {isOperating ? 'Active' : 'Inactive'}
+            {isOperating && (
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            )}
+            {isOperating ? "Active" : "Inactive"}
           </div>
 
           {/* Expand Icon */}
           <ChevronDown
             className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${
-              isActive ? 'rotate-180' : ''
+              isActive ? "rotate-180" : ""
             }`}
           />
         </div>
@@ -110,7 +129,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
         {/* Body */}
         <div
           className={`overflow-hidden transition-all duration-500 bg-muted/50 border-t border-border ${
-            isActive ? 'max-h-[calc(100vh-220px)] overflow-y-auto' : 'max-h-0'
+            isActive ? "max-h-[calc(100vh-220px)] overflow-y-auto" : "max-h-0"
           }`}
         >
           <div className="p-5 relative">
@@ -118,7 +137,8 @@ export const RouteCard: React.FC<RouteCardProps> = ({
             <div
               className="absolute left-[38px] top-9 bottom-9 w-0.5"
               style={{
-                background: 'linear-gradient(to bottom, hsl(var(--border)) 0%, hsl(var(--border)) 50%, transparent 100%)',
+                background:
+                  "linear-gradient(to bottom, hsl(var(--border)) 0%, hsl(var(--border)) 50%, transparent 100%)",
               }}
             />
 
@@ -127,15 +147,15 @@ export const RouteCard: React.FC<RouteCardProps> = ({
               <div
                 key={idx}
                 className={`relative pl-12 mb-7 last:mb-0 z-10 ${
-                  idx === 0 ? 'stop-current' : ''
+                  idx === 0 ? "stop-current" : ""
                 }`}
               >
                 {/* Marker */}
                 <div
                   className={`absolute left-0 top-0 w-7 h-7 rounded-full flex items-center justify-center border-3 shadow-md transition-all z-[2] ${
                     idx === 0
-                      ? 'bg-green-500 border-green-500 scale-125 shadow-[0_0_0_8px_rgba(16,185,129,0.2)] animate-[pulse-marker_2s_infinite]'
-                      : 'bg-card border-border'
+                      ? "bg-green-500 border-green-500 scale-125 shadow-[0_0_0_8px_rgba(16,185,129,0.2)] animate-[pulse-marker_2s_infinite]"
+                      : "bg-card border-border"
                   }`}
                 >
                   {idx === 0 && <MapPin className="h-3 w-3 text-white" />}
@@ -144,10 +164,16 @@ export const RouteCard: React.FC<RouteCardProps> = ({
                 {/* Content */}
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground">{wp.name}</p>
-                    <p className={`text-xs flex items-center gap-1.5 font-medium ${
-                      idx === 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
-                    }`}>
+                    <p className="text-sm font-bold text-foreground">
+                      {wp.name}
+                    </p>
+                    <p
+                      className={`text-xs flex items-center gap-1.5 font-medium ${
+                        idx === 0
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-muted-foreground"
+                      }`}
+                    >
                       {idx === 0 ? (
                         <>
                           <MapPin className="h-3 w-3" /> Boarding Now
@@ -163,8 +189,8 @@ export const RouteCard: React.FC<RouteCardProps> = ({
                   <div
                     className={`text-xs font-bold px-2.5 py-1.5 rounded font-poppins border ${
                       idx === 0
-                        ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400 border-green-500'
-                        : 'bg-card border-border'
+                        ? "bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400 border-green-500"
+                        : "bg-card border-border"
                     }`}
                   >
                     {wp.eta}
@@ -189,7 +215,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
                   <div className="text-center p-2.5 bg-muted rounded-lg hover:border-primary border-2 border-transparent transition-all cursor-pointer hover:-translate-y-0.5">
                     <PersonStanding className="h-5 w-5 text-primary mx-auto mb-1.5" />
                     <p className="text-xs font-bold font-poppins">
-                      {calculateTravelTime(nearestStop.distance, 'walk')}
+                      {calculateTravelTime(nearestStop.distance, "walk")}
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
                       Walking
@@ -199,7 +225,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
                   <div className="text-center p-2.5 bg-muted rounded-lg hover:border-primary border-2 border-transparent transition-all cursor-pointer hover:-translate-y-0.5">
                     <Bike className="h-5 w-5 text-primary mx-auto mb-1.5" />
                     <p className="text-xs font-bold font-poppins">
-                      {calculateTravelTime(nearestStop.distance, 'bike')}
+                      {calculateTravelTime(nearestStop.distance, "bike")}
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
                       Bike
@@ -209,7 +235,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
                   <div className="text-center p-2.5 bg-muted rounded-lg hover:border-primary border-2 border-transparent transition-all cursor-pointer hover:-translate-y-0.5">
                     <Car className="h-5 w-5 text-primary mx-auto mb-1.5" />
                     <p className="text-xs font-bold font-poppins">
-                      {calculateTravelTime(nearestStop.distance, 'car')}
+                      {calculateTravelTime(nearestStop.distance, "car")}
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
                       Car

@@ -1,30 +1,92 @@
-import React, { useState, useCallback } from 'react';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
-import { MapContainer } from '@/components/MapContainer';
-import { MapControls } from '@/components/MapControls';
-import { MenuSidebar } from '@/components/MenuSidebar';
-import { Footer } from '@/components/Footer';
-import { routes, campuses, hostels, grounds, gates, Location } from '@/data/routeData';
-import { useOperatingStatus } from '@/hooks/useOperatingStatus';
-import { useGeolocation, getDistance } from '@/hooks/useGeolocation';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useCallback, useEffect } from "react";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { Navbar } from "@/components/Navbar";
+import { Sidebar } from "@/components/Sidebar";
+import { MapContainer } from "@/components/MapContainer";
+import { MapControls } from "@/components/MapControls";
+import { MenuSidebar } from "@/components/MenuSidebar";
+import { Footer } from "@/components/Footer";
+import { Location, Route } from "@/data/routeData";
+import { useOperatingStatus } from "@/hooks/useOperatingStatus";
+import { useGeolocation, getDistance } from "@/hooks/useGeolocation";
+import { useToast } from "@/hooks/use-toast";
+import apiService from "@/services/index";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeRouteId, setActiveRouteId] = useState<number | null>(null);
+  const [activeRouteId, setActiveRouteId] = useState<number | string | null>(
+    null,
+  );
   const [showAllRoutes, setShowAllRoutes] = useState(false);
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
-  const [locationType, setLocationType] = useState<'campuses' | 'hostels' | 'grounds' | 'gates' | null>(null);
-  const [selectedMarker, setSelectedMarker] = useState<{ lat: number; lng: number } | null>(null);
-  const [radiusCircle, setRadiusCircle] = useState<{ center: { lat: number; lng: number }; radius: number } | null>(null);
+  const [locationType, setLocationType] = useState<
+    "campuses" | "hostels" | "grounds" | "gates" | null
+  >(null);
+  const [selectedMarker, setSelectedMarker] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [radiusCircle, setRadiusCircle] = useState<{
+    center: { lat: number; lng: number };
+    radius: number;
+  } | null>(null);
   const [choosingOnMap, setChoosingOnMap] = useState(false);
+  const [apiHostels, setApiHostels] = useState<Location[]>([]);
+  const [apiCampuses, setApiCampuses] = useState<Location[]>([]);
+  const [apiGrounds, setApiGrounds] = useState<Location[]>([]);
+  const [apiGates, setApiGates] = useState<Location[]>([]);
+  const [apiRoutes, setApiRoutes] = useState<Route[]>([]);
 
-  const { position: userLocation, isLoading: isLocating, getLocation, clearLocation } = useGeolocation();
+  const {
+    position: userLocation,
+    isLoading: isLocating,
+    getLocation,
+    clearLocation,
+  } = useGeolocation();
   const operatingStatus = useOperatingStatus();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAllLocations = async () => {
+      try {
+        const [hostelsData, campusesData, groundsData, gatesData, routesData] =
+          await Promise.all([
+            apiService.getHostels(),
+            apiService.getCampuses(),
+            apiService.getGrounds(),
+            apiService.getGates(),
+            apiService.getRoutes(),
+          ]);
+
+        if (Array.isArray(hostelsData)) setApiHostels(hostelsData);
+        if (Array.isArray(campusesData)) setApiCampuses(campusesData);
+        if (Array.isArray(groundsData)) setApiGrounds(groundsData);
+        if (Array.isArray(gatesData)) setApiGates(gatesData);
+
+        if (Array.isArray(routesData)) {
+          setApiRoutes(routesData);
+        } else if (routesData && typeof routesData === "object") {
+          const possibleRoutes =
+            (routesData as any).routes ||
+            (routesData as any).data ||
+            (routesData as any).allRoutes ||
+            (routesData as any).all;
+          if (Array.isArray(possibleRoutes)) {
+            setApiRoutes(possibleRoutes);
+          } else {
+            console.warn(
+              "Could not find routes array in object response:",
+              routesData,
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch locations:", error);
+      }
+    };
+    fetchAllLocations();
+  }, []);
 
   const handleLocateMe = useCallback(() => {
     if (userLocation) {
@@ -37,16 +99,24 @@ const Index = () => {
 
   const handleRouteToggle = useCallback((routeId: number) => {
     setShowAllRoutes(false);
-    setActiveRouteId(prev => prev === routeId ? null : routeId);
+    setActiveRouteId((prev) => (prev === routeId ? null : routeId));
   }, []);
 
-  const handleShowLocations = useCallback((type: 'campuses' | 'hostels' | 'grounds' | 'gates') => {
-    const locationMap = { campuses, hostels, grounds, gates };
-    setVisibleLocations(locationMap[type]);
-    setLocationType(type);
-    setActiveRouteId(null);
-    setShowAllRoutes(false);
-  }, []);
+  const handleShowLocations = useCallback(
+    (type: "campuses" | "hostels" | "grounds" | "gates") => {
+      const locationMap = {
+        campuses: apiCampuses,
+        hostels: apiHostels,
+        grounds: apiGrounds,
+        gates: apiGates,
+      };
+      setVisibleLocations(locationMap[type]);
+      setLocationType(type);
+      setActiveRouteId(null);
+      setShowAllRoutes(false);
+    },
+    [apiHostels, apiCampuses, apiGrounds, apiGates],
+  );
 
   const handleShowAllRoutes = useCallback(() => {
     setShowAllRoutes(true);
@@ -55,40 +125,58 @@ const Index = () => {
     setLocationType(null);
   }, []);
 
-  const handleMapClick = useCallback((lat: number, lng: number) => {
-    if (choosingOnMap) {
+  const handleMapClick = useCallback(
+    (lat: number, lng: number) => {
+      if (choosingOnMap) {
+        setSelectedMarker({ lat, lng });
+      } else {
+        setActiveRouteId(null);
+        setVisibleLocations([]);
+        setLocationType(null);
+      }
+    },
+    [choosingOnMap],
+  );
+
+  const handleSearchSelect = useCallback(
+    (lat: number, lng: number, _address: string) => {
       setSelectedMarker({ lat, lng });
-    } else {
-      setActiveRouteId(null);
-      setVisibleLocations([]);
-      setLocationType(null);
-    }
-  }, [choosingOnMap]);
+    },
+    [],
+  );
 
-  const handleSearchSelect = useCallback((lat: number, lng: number, _address: string) => {
-    setSelectedMarker({ lat, lng });
-  }, []);
-
-  const handleAddRadius = useCallback((type: 'current' | 'marker', radius: number) => {
-    const center = type === 'current' ? userLocation : selectedMarker;
-    if (center) {
-      setRadiusCircle({ center, radius });
-    } else {
-      toast({ title: 'Error', description: type === 'current' ? 'Please enable location first' : 'Please select a marker first' });
-    }
-  }, [userLocation, selectedMarker, toast]);
+  const handleAddRadius = useCallback(
+    (type: "current" | "marker", radius: number) => {
+      const center = type === "current" ? userLocation : selectedMarker;
+      if (center) {
+        setRadiusCircle({ center, radius });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            type === "current"
+              ? "Please enable location first"
+              : "Please select a marker first",
+        });
+      }
+    },
+    [userLocation, selectedMarker, toast],
+  );
 
   const handleFindClosestRoute = useCallback(() => {
     const ref = userLocation || selectedMarker;
     if (!ref) {
-      toast({ title: 'Location Required', description: 'Enable location or select a point on map' });
+      toast({
+        title: "Location Required",
+        description: "Enable location or select a point on map",
+      });
       return;
     }
 
     let closestRoute = null;
     let minDist = Infinity;
-    routes.forEach(route => {
-      route.waypoints.forEach(wp => {
+    apiRoutes.forEach((route) => {
+      route.waypoints.forEach((wp) => {
         const dist = getDistance(ref.lat, ref.lng, wp.lat, wp.lng);
         if (dist < minDist) {
           minDist = dist;
@@ -101,16 +189,19 @@ const Index = () => {
       setActiveRouteId((closestRoute as any).id);
       setShowAllRoutes(false);
     }
-  }, [userLocation, selectedMarker, toast]);
+  }, [userLocation, selectedMarker, toast, apiRoutes]);
 
   const handleToggleChooseOnMap = useCallback(() => {
     if (selectedMarker) {
       setSelectedMarker(null);
       setChoosingOnMap(false);
     } else {
-      setChoosingOnMap(prev => !prev);
+      setChoosingOnMap((prev) => !prev);
       if (!choosingOnMap) {
-        toast({ title: 'Choose on Map', description: 'Click on the map to place a marker' });
+        toast({
+          title: "Choose on Map",
+          description: "Click on the map to place a marker",
+        });
       }
     }
   }, [selectedMarker, choosingOnMap, toast]);
@@ -119,7 +210,7 @@ const Index = () => {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
   }
 
-  const activeRoute = routes.find(r => r.id === activeRouteId) || null;
+  const activeRoute = apiRoutes.find((r) => r.id === activeRouteId) || null;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
@@ -127,10 +218,10 @@ const Index = () => {
         onLocateMe={handleLocateMe}
         isLocating={isLocating}
         hasLocation={!!userLocation}
-        onShowCampuses={() => handleShowLocations('campuses')}
-        onShowHostels={() => handleShowLocations('hostels')}
-        onShowGrounds={() => handleShowLocations('grounds')}
-        onShowGates={() => handleShowLocations('gates')}
+        onShowCampuses={() => handleShowLocations("campuses")}
+        onShowHostels={() => handleShowLocations("hostels")}
+        onShowGrounds={() => handleShowLocations("grounds")}
+        onShowGates={() => handleShowLocations("gates")}
         onShowAllRoutes={handleShowAllRoutes}
         onMenuToggle={() => setMenuOpen(true)}
       />
@@ -139,15 +230,15 @@ const Index = () => {
         <MenuSidebar
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
-          onShowCampuses={() => handleShowLocations('campuses')}
-          onShowHostels={() => handleShowLocations('hostels')}
-          onShowGrounds={() => handleShowLocations('grounds')}
-          onShowGates={() => handleShowLocations('gates')}
+          onShowCampuses={() => handleShowLocations("campuses")}
+          onShowHostels={() => handleShowLocations("hostels")}
+          onShowGrounds={() => handleShowLocations("grounds")}
+          onShowGates={() => handleShowLocations("gates")}
           onShowAllRoutes={handleShowAllRoutes}
         />
 
         <Sidebar
-          routes={routes}
+          routes={apiRoutes}
           activeRouteId={activeRouteId}
           onRouteToggle={handleRouteToggle}
           userLocation={userLocation}
@@ -177,6 +268,7 @@ const Index = () => {
             choosingOnMap={choosingOnMap}
             showAllRoutes={showAllRoutes}
             onLocationSelect={() => {}}
+            allRoutes={apiRoutes}
           />
         </div>
       </div>

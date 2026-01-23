@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { Search, MapPin, X, Loader2 } from 'lucide-react';
-import { useOperatingStatus, OperatingStatus } from '@/hooks/useOperatingStatus';
-import { Route, OPERATING_HOURS } from '@/data/routeData';
-import { RouteCard } from './RouteCard';
-import { useSearch } from '@/hooks/useSearch';
+import React, { useState } from "react";
+import { Search, MapPin, X, Loader2 } from "lucide-react";
+import {
+  useOperatingStatus,
+  OperatingStatus,
+} from "@/hooks/useOperatingStatus";
+import { Route, OPERATING_HOURS } from "@/data/routeData";
+import { RouteCard } from "./RouteCard";
+import { useSearch } from "@/hooks/useSearch";
 
-import { useReverseGeocoding } from '@/hooks/useReverseGeocoding';
+import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 
 interface SidebarProps {
   routes: Route[];
-  activeRouteId: number | null;
-  onRouteToggle: (routeId: number) => void;
+  activeRouteId: number | string | null;
+  onRouteToggle: (routeId: number | string) => void;
   userLocation: { lat: number; lng: number } | null;
   onSearchSelect: (lat: number, lng: number, address: string) => void;
   operatingStatus: OperatingStatus;
@@ -24,35 +27,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSearchSelect,
   operatingStatus,
 }) => {
-  const { query, setQuery, suggestions, isLoading, search, clearSearch } = useSearch();
-  const { address, isGeocoding } = useReverseGeocoding(userLocation?.lat, userLocation?.lng);
-  const [sidebarHeight, setSidebarHeight] = useState('50vh');
-
+  const { query, setQuery, suggestions, isLoading, search, clearSearch } =
+    useSearch();
+  const { address, isGeocoding } = useReverseGeocoding(
+    userLocation?.lat,
+    userLocation?.lng,
+  );
+  const [sidebarHeight, setSidebarHeight] = useState("50vh");
   const handleSearch = async () => {
     const result = await search();
     if (result) {
-      onSearchSelect(parseFloat(result.lat), parseFloat(result.lon), result.display_name);
+      onSearchSelect(
+        parseFloat(result.lat),
+        parseFloat(result.lon),
+        result.display_name,
+      );
       clearSearch();
     }
   };
 
   const handleSuggestionClick = (suggestion: any) => {
-    onSearchSelect(parseFloat(suggestion.lat), parseFloat(suggestion.lon), suggestion.display_name);
+    onSearchSelect(
+      parseFloat(suggestion.lat),
+      parseFloat(suggestion.lon),
+      suggestion.display_name,
+    );
     clearSearch();
   };
 
   const formatNextBatchTime = () => {
-    if (!operatingStatus.nextBatch) return '--:--';
-    
+    if (!operatingStatus.nextBatch) return "--:--";
+
     const startTime = new Date();
     startTime.setHours(operatingStatus.nextBatch.batch.start, 0, 0, 0);
     if (operatingStatus.nextBatch.tomorrow) {
       startTime.setDate(startTime.getDate() + 1);
     }
-    
-    return startTime.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+
+    return startTime.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
   };
@@ -71,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             placeholder="Search location in Lahore..."
             className="w-full pl-10 pr-4 py-2.5 border-2 border-border rounded-lg text-sm bg-background focus:outline-none focus:border-primary transition-colors"
           />
@@ -88,8 +102,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((suggestion, i) => {
-                const parts = suggestion.display_name.split(', ');
-                const shortName = parts.slice(0, 2).join(', ');
+                const parts = suggestion.display_name.split(", ");
+                const shortName = parts.slice(0, 2).join(", ");
                 return (
                   <button
                     key={i}
@@ -111,7 +125,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <MapPin className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-green-800 dark:text-green-200">Your Location</p>
+              <p className="text-xs font-bold text-green-800 dark:text-green-200">
+                Your Location
+              </p>
               <p className="text-xs text-green-600 dark:text-green-400 truncate">
                 {isGeocoding ? (
                   <span className="flex items-center gap-1">
@@ -119,7 +135,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     Finding address...
                   </span>
                 ) : (
-                  address || (userLocation ? `${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}` : '')
+                  address ||
+                  (userLocation
+                    ? `${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}`
+                    : "")
                 )}
               </p>
             </div>
@@ -132,14 +151,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`w-2.5 h-2.5 rounded-full ${
                 operatingStatus.isOperating
-                  ? 'bg-green-500 animate-[pulse-dot_2s_infinite]'
-                  : 'bg-red-500'
+                  ? "bg-green-500 animate-[pulse-dot_2s_infinite]"
+                  : "bg-red-500"
               }`}
             />
             <span className="text-sm font-semibold">
               {operatingStatus.isOperating
                 ? `Active - ${OPERATING_HOURS[operatingStatus.currentBatch as keyof typeof OPERATING_HOURS]?.label} Batch`
-                : 'Buses Not Operating'}
+                : "Buses Not Operating"}
             </span>
           </div>
           {!operatingStatus.isOperating && operatingStatus.nextBatch && (
@@ -153,13 +172,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Routes */}
       <div className="flex-1 overflow-y-auto p-3.5">
-        {routes.map((route) => (
+        {routes.map((route, idx) => (
           <RouteCard
             key={route.id}
             route={route}
+            displayIndex={idx + 1}
             isActive={activeRouteId === route.id}
             onToggle={() => onRouteToggle(route.id)}
-            isOperating={operatingStatus.isOperating && route.batches.includes(operatingStatus.currentBatch || '')}
+            isOperating={
+              operatingStatus.isOperating &&
+              route.batches.includes(operatingStatus.currentBatch || "")
+            }
             userLocation={userLocation}
           />
         ))}
