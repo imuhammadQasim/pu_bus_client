@@ -59,26 +59,30 @@ const Index = () => {
             apiService.getRoutes(),
           ]);
 
-        if (Array.isArray(hostelsData)) setApiHostels(hostelsData);
-        if (Array.isArray(campusesData)) setApiCampuses(campusesData);
-        if (Array.isArray(groundsData)) setApiGrounds(groundsData);
-        if (Array.isArray(gatesData)) setApiGates(gatesData);
+        // Helper to extract array from standard API response structure
+        const extractArray = (res: any) => (res && Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []);
+        
+        if (hostelsData) setApiHostels(extractArray(hostelsData));
+        if (campusesData) setApiCampuses(extractArray(campusesData));
+        if (groundsData) setApiGrounds(extractArray(groundsData));
+        if (gatesData) setApiGates(extractArray(gatesData));
 
-        if (Array.isArray(routesData)) {
-          setApiRoutes(routesData);
-        } else if (routesData && typeof routesData === "object") {
-          const possibleRoutes =
-            (routesData as any).routes ||
-            (routesData as any).data ||
-            (routesData as any).allRoutes ||
-            (routesData as any).all;
-          if (Array.isArray(possibleRoutes)) {
-            setApiRoutes(possibleRoutes);
-          } else {
-            console.warn(
-              "Could not find routes array in object response:",
-              routesData,
-            );
+        if (routesData) {
+          if (Array.isArray(routesData)) {
+            setApiRoutes(routesData);
+          } else if (routesData && typeof routesData === "object") {
+            const dataObj = (routesData as any).data;
+            // Check for data.routes (specific to your routes endpoint) or just data (standard)
+            const possibleRoutes = 
+              (dataObj && Array.isArray(dataObj.routes)) ? dataObj.routes :
+              Array.isArray(dataObj) ? dataObj :
+              (routesData as any).routes || [];
+              
+            if (Array.isArray(possibleRoutes) && possibleRoutes.length > 0) {
+              setApiRoutes(possibleRoutes);
+            } else {
+              console.warn("Could not find routes array in object response:", routesData);
+            }
           }
         }
       } catch (error) {

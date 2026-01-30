@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, MapPin, X, Loader2 } from "lucide-react";
 import {
   useOperatingStatus,
@@ -33,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     userLocation?.lat,
     userLocation?.lng,
   );
+  
   const [sidebarHeight, setSidebarHeight] = useState("50vh");
   const handleSearch = async () => {
     const result = await search();
