@@ -61,6 +61,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     const startTime = new Date();
     startTime.setHours(operatingStatus.nextBatch.batch.start, 0, 0, 0);
+    
+    if (operatingStatus.nextBatch.nextMonday) {
+      // Find next Monday
+      const day = startTime.getDay();
+      const diff = day === 0 ? 1 : (8 - day);
+      startTime.setDate(startTime.getDate() + diff);
+      
+      return `Mon, ${startTime.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`;
+    }
+
     if (operatingStatus.nextBatch.tomorrow) {
       startTime.setDate(startTime.getDate() + 1);
     }
@@ -159,7 +173,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-sm font-semibold">
               {operatingStatus.isOperating
                 ? `Active - ${OPERATING_HOURS[operatingStatus.currentBatch as keyof typeof OPERATING_HOURS]?.label} Batch`
-                : "Buses Not Operating"}
+                : operatingStatus.isWeekend 
+                  ? "Weekend - Closed" 
+                  : "Buses Not Operating"}
             </span>
           </div>
           {!operatingStatus.isOperating && operatingStatus.nextBatch && (

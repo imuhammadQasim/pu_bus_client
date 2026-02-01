@@ -37,6 +37,7 @@ const Index = () => {
   const [apiGrounds, setApiGrounds] = useState<Location[]>([]);
   const [apiGates, setApiGates] = useState<Location[]>([]);
   const [apiRoutes, setApiRoutes] = useState<Route[]>([]);
+  const [apiLiveBuses, setApiLiveBuses] = useState<Route[]>([]);
 
   const {
     position: userLocation,
@@ -48,15 +49,17 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Live Buses are here ===>>", apiLiveBuses);
     const fetchAllLocations = async () => {
       try {
-        const [hostelsData, campusesData, groundsData, gatesData, routesData] =
+        const [hostelsData, campusesData, groundsData, gatesData, routesData, liveBusesData] =
           await Promise.all([
             apiService.getHostels(),
             apiService.getCampuses(),
             apiService.getGrounds(),
             apiService.getGates(),
             apiService.getRoutes(),
+            apiService.getLiveBuses(),
           ]);
 
         // Helper to extract array from standard API response structure
@@ -66,6 +69,7 @@ const Index = () => {
         if (campusesData) setApiCampuses(extractArray(campusesData));
         if (groundsData) setApiGrounds(extractArray(groundsData));
         if (gatesData) setApiGates(extractArray(gatesData));
+        if (liveBusesData) setApiLiveBuses(extractArray(liveBusesData));
 
         if (routesData) {
           if (Array.isArray(routesData)) {
