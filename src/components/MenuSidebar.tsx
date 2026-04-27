@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, LogOut, User, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from './ui/button';
 
@@ -24,14 +24,26 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
   onShowAllRoutes,
 }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleAction = (action: () => void) => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => action(), 100);
+    } else {
+      action();
+    }
+    onClose();
+  };
 
   const menuItems = [
-    { label: 'Departments', action: onShowCampuses },
-    { label: 'Show all Routes', action: onShowAllRoutes },
+    { label: 'Departments', action: () => handleAction(onShowCampuses) },
+    { label: 'Show all Routes', action: () => handleAction(onShowAllRoutes) },
     { label: 'Bus Challan', link: '/bus-challan' },
-    { label: 'Hostels', action: onShowHostels },
-    { label: 'Grounds', action: onShowGrounds },
-    { label: 'Gates', action: onShowGates },
+    { label: 'Hostels', action: () => handleAction(onShowHostels) },
+    { label: 'Grounds', action: () => handleAction(onShowGrounds) },
+    { label: 'Gates', action: () => handleAction(onShowGates) },
   ];
 
   return (

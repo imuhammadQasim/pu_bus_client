@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Menu, MapPin, Loader2, X, User, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,8 +38,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLoginClick,
 }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [titleVisible, setTitleVisible] = useState(false);
   const { user, logout } = useAuth();
+
+  const handleAction = (action: () => void) => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Delay action slightly to ensure navigation completes and Index mounts
+      setTimeout(() => action(), 100);
+    } else {
+      action();
+    }
+  };
 
   React.useEffect(() => {
     const timer = setTimeout(() => setTitleVisible(true), 100);
@@ -47,11 +59,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   const navItems = [
-    { label: 'Departments', action: onShowCampuses },
-    { label: 'Show all Routes', action: onShowAllRoutes },
-    { label: 'Hostels', action: onShowHostels },
-    { label: 'Grounds', action: onShowGrounds },
-    { label: 'Gates', action: onShowGates },
+    { label: 'Departments', action: () => handleAction(onShowCampuses) },
+    { label: 'Show all Routes', action: () => handleAction(onShowAllRoutes) },
+    { label: 'Hostels', action: () => handleAction(onShowHostels) },
+    { label: 'Grounds', action: () => handleAction(onShowGrounds) },
+    { label: 'Gates', action: () => handleAction(onShowGates) },
     { label: 'Bus Challan', link: '/bus-challan' },
   ];
 

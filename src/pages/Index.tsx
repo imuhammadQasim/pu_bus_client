@@ -15,7 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import apiService from "@/services/index";
 
 const Index = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    return !sessionStorage.getItem("hasLoaded");
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -265,7 +267,14 @@ const Index = () => {
   }, [userLocation, pendingDirections]);
 
   if (isLoading) {
-    return <LoadingScreen onComplete={() => setIsLoading(false)} />;
+    return (
+      <LoadingScreen 
+        onComplete={() => {
+          sessionStorage.setItem("hasLoaded", "true");
+          setIsLoading(false);
+        }} 
+      />
+    );
   }
 
   const activeRoute = apiRoutes.find((r) => r.id === activeRouteId) || null;

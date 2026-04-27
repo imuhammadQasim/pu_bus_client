@@ -116,7 +116,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
               className="w-12 h-12 rounded-full flex items-center justify-center font-bold font-poppins text-base text-white shadow-md transition-transform hover:scale-105"
               style={{ backgroundColor: route.color }}
             >
-              {displayIndex}
+              R{displayIndex}
             </div>
 
             {/* Details */}
