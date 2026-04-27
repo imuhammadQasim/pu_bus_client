@@ -12,12 +12,12 @@ export interface Waypoint {
 }
 
 export interface Route {
-  id: number;
+  id: number | string;
   name: string;
   desc: string;
   color: string;
   waypoints: Waypoint[];
-  batches: string[];
+  batches: (string | { batch: string })[];
   routeCoordinates?: { lat: number; lng: number }[];
 }
 

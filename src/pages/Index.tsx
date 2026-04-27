@@ -54,40 +54,58 @@ const Index = () => {
     console.log("Live Buses are here ===>>", apiLiveBuses);
     const fetchAllLocations = async () => {
       try {
-        const [hostelsData, campusesData, groundsData, gatesData, routesData, liveBusesData] =
-          await Promise.all([
-            apiService.getHostels(),
-            apiService.getCampuses(),
-            apiService.getGrounds(),
-            apiService.getGates(),
-            apiService.getRoutes(),
-            apiService.getLiveBuses(),
-          ]);
+        const results = await Promise.allSettled([
+          apiService.getHostels(),
+          apiService.getCampuses(),
+          apiService.getGrounds(),
+          apiService.getGates(),
+          apiService.getRoutes(),
+          apiService.getLiveBuses(),
+        ]);
+
+        const [
+          hostelsRes,
+          campusesRes,
+          groundsRes,
+          gatesRes,
+          routesRes,
+          liveBusesRes,
+        ] = results;
 
         // Helper to extract array from standard API response structure
-        const extractArray = (res: any) => (res && Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []);
-        
-        if (hostelsData) setApiHostels(extractArray(hostelsData));
-        if (campusesData) setApiCampuses(extractArray(campusesData));
-        if (groundsData) setApiGrounds(extractArray(groundsData));
-        if (gatesData) setApiGates(extractArray(gatesData));
-        if (liveBusesData) setApiLiveBuses(extractArray(liveBusesData));
+        const extractArray = (res: any) =>
+          res && res.status === "fulfilled" && res.value && Array.isArray(res.value.data)
+            ? res.value.data
+            : res && res.status === "fulfilled" && Array.isArray(res.value)
+              ? res.value
+              : [];
 
-        if (routesData) {
+        setApiHostels(extractArray(hostelsRes));
+        setApiCampuses(extractArray(campusesRes));
+        setApiGrounds(extractArray(groundsRes));
+        setApiGates(extractArray(gatesRes));
+        setApiLiveBuses(extractArray(liveBusesRes));
+
+        if (routesRes.status === "fulfilled" && routesRes.value) {
+          const routesData = routesRes.value;
           if (Array.isArray(routesData)) {
             setApiRoutes(routesData);
           } else if (routesData && typeof routesData === "object") {
             const dataObj = (routesData as any).data;
-            // Check for data.routes (specific to your routes endpoint) or just data (standard)
-            const possibleRoutes = 
-              (dataObj && Array.isArray(dataObj.routes)) ? dataObj.routes :
-              Array.isArray(dataObj) ? dataObj :
-              (routesData as any).routes || [];
-              
+            const possibleRoutes =
+              dataObj && Array.isArray(dataObj.routes)
+                ? dataObj.routes
+                : Array.isArray(dataObj)
+                  ? dataObj
+                  : (routesData as any).routes || [];
+
             if (Array.isArray(possibleRoutes) && possibleRoutes.length > 0) {
               setApiRoutes(possibleRoutes);
             } else {
-              console.warn("Could not find routes array in object response:", routesData);
+              console.warn(
+                "Could not find routes array in object response:",
+                routesData,
+              );
             }
           }
         }
@@ -107,7 +125,7 @@ const Index = () => {
     }
   }, [userLocation, clearLocation, getLocation]);
 
-  const handleRouteToggle = useCallback((routeId: number) => {
+  const handleRouteToggle = useCallback((routeId: number | string) => {
     setShowAllRoutes(false);
     setActiveRouteId((prev) => (prev === routeId ? null : routeId));
   }, []);

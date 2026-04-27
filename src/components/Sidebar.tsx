@@ -198,7 +198,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onToggle={() => onRouteToggle(route.id)}
             isOperating={
               operatingStatus.isOperating &&
-              route.batches.includes(operatingStatus.currentBatch || "")
+              route.batches.some(b => 
+                (typeof b === 'string' ? b.toLowerCase() : b.batch.toLowerCase()) === 
+                (operatingStatus.currentBatch?.toLowerCase() || "")
+              )
             }
             userLocation={userLocation}
           />
