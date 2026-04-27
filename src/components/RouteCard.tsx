@@ -7,9 +7,12 @@ import {
   PersonStanding,
   Bike,
   Car,
+  Heart,
 } from "lucide-react";
 import { Route } from "@/data/routeData";
 import { getDistance, calculateTravelTime } from "@/hooks/useGeolocation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface RouteCardProps {
   route: Route;
@@ -28,6 +31,26 @@ export const RouteCard: React.FC<RouteCardProps> = ({
   isOperating,
   userLocation,
 }) => {
+  const { user, addFavoriteRoute, removeFavoriteRoute, isFavoriteRoute } = useAuth();
+  const { toast } = useToast();
+
+  const isFavorited = isFavoriteRoute(route.id);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      toast({ title: "Error", description: "Please login first" });
+      return;
+    }
+
+    if (isFavorited) {
+      removeFavoriteRoute(route.id);
+      toast({ title: "Removed", description: "Route removed from favorites" });
+    } else {
+      addFavoriteRoute(route.id);
+      toast({ title: "Added", description: "Route added to favorites" });
+    }
+  };
   // Calculate nearest stop and travel times
   const getNearestStop = () => {
     if (!userLocation) return null;
@@ -117,6 +140,21 @@ export const RouteCard: React.FC<RouteCardProps> = ({
             )}
             {isOperating ? "Active" : "Inactive"}
           </div>
+
+          {/* Favorite Button */}
+          <button
+            onClick={handleFavoriteClick}
+            className="p-2 rounded-full hover:bg-muted transition-colors ml-1"
+            title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              className={`h-5 w-5 transition-colors ${
+                isFavorited
+                  ? "fill-red-500 text-red-500"
+                  : "text-muted-foreground hover:text-red-500"
+              }`}
+            />
+          </button>
 
           {/* Expand Icon */}
           <ChevronDown

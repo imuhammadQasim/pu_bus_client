@@ -6,6 +6,7 @@ import { MapContainer } from "@/components/MapContainer";
 import { MapControls } from "@/components/MapControls";
 import { MenuSidebar } from "@/components/MenuSidebar";
 import { Footer } from "@/components/Footer";
+import { LoginModal } from "@/components/LoginModal";
 import { Location, Route } from "@/data/routeData";
 import { useOperatingStatus } from "@/hooks/useOperatingStatus";
 import { useGeolocation, getDistance } from "@/hooks/useGeolocation";
@@ -15,6 +16,7 @@ import apiService from "@/services/index";
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [activeRouteId, setActiveRouteId] = useState<number | string | null>(
     null,
   );
@@ -232,6 +234,7 @@ const Index = () => {
         onShowGates={() => handleShowLocations("gates")}
         onShowAllRoutes={handleShowAllRoutes}
         onMenuToggle={() => setMenuOpen(true)}
+        onLoginClick={() => setLoginModalOpen(true)}
       />
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
@@ -282,6 +285,8 @@ const Index = () => {
       </div>
 
       <Footer />
+
+      <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
     </div>
   );
 };

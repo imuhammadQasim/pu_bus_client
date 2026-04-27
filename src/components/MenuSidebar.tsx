@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface MenuSidebarProps {
   isOpen: boolean;
@@ -23,10 +24,10 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
   const menuItems = [
     { label: 'Campuses', action: onShowCampuses },
     { label: 'Show all Routes', action: onShowAllRoutes },
+    { label: 'Bus Challan', link: '/bus-challan' },
     { label: 'Hostels', action: onShowHostels },
     { label: 'Grounds', action: onShowGrounds },
     { label: 'Gates', action: onShowGates },
-    { label: 'About US', action: () => {} },
   ];
 
   return (
@@ -48,17 +49,28 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
 
       {/* Menu Items */}
       <nav className="flex-1 py-2 overflow-y-auto">
-        {menuItems.map((item, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              item.action();
-              onClose();
-            }}
-            className="w-full flex items-center h-12 px-6 text-muted-foreground font-medium text-sm hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 transition-all mr-2 rounded-r-full"
-          >
-            {item.label}
-          </button>
+        {menuItems.map((item: any, idx) => (
+          item.link ? (
+            <Link
+              key={idx}
+              to={item.link}
+              onClick={onClose}
+              className="w-full flex items-center h-12 px-6 text-muted-foreground font-medium text-sm hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 transition-all mr-2 rounded-r-full"
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <button
+              key={idx}
+              onClick={() => {
+                item.action();
+                onClose();
+              }}
+              className="w-full flex items-center h-12 px-6 text-muted-foreground font-medium text-sm hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 transition-all mr-2 rounded-r-full"
+            >
+              {item.label}
+            </button>
+          )
         ))}
       </nav>
     </aside>
