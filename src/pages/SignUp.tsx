@@ -71,8 +71,11 @@ export const SignUp = () => {
         phoneNumber: formData.phoneNumber,
         password: formData.password,
       });
-      toast({ title: "Success", description: "Account created successfully!" });
-      navigate("/");
+      toast({ 
+        title: "OTP Sent", 
+        description: "Please check your university email for the activation code." 
+      });
+      navigate("/signup-verification", { state: { email: formData.email } });
     } catch (error) {
       toast({ title: "Error", description: "Sign up failed. Please try again." });
     } finally {

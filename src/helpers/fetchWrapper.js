@@ -12,11 +12,16 @@ const handleResponse = async (response) => {
 
 const request = (method) => {
   return (url, body, options = {}) => {
+    const token = localStorage.getItem("token");
     const headers = {
       "Content-Type": "application/json",
       "X-path": window.location.pathname,
       ...options.headers,
     };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
     const config = {
       method,

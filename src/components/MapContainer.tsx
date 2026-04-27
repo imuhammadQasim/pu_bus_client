@@ -29,6 +29,7 @@ interface MapContainerProps {
   showAllRoutes: boolean;
   onLocationSelect: (location: Location) => void;
   allRoutes: Route[];
+  showDirectionsTo: Location | null;
 }
 
 export const MapContainer: React.FC<MapContainerProps> = ({
@@ -43,6 +44,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   showAllRoutes,
   onLocationSelect,
   allRoutes,
+  showDirectionsTo,
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const selectedMarkerRef = useRef<L.Marker | null>(null);
   const routeLayersRef = useRef<{ [key: string | number]: L.LayerGroup }>({});
   const routingControlsRef = useRef<{ [key: string]: any }>({});
+  const directionsControlRef = useRef<any>(null);
   const locationMarkersRef = useRef<L.Marker[]>([]);
   const radiusCircleRef = useRef<L.Circle | null>(null);
   const onMapClickRef = useRef(onMapClick);
@@ -221,14 +224,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             iconAnchor: [size / 2, size / 2],
           }),
         }).addTo(layerGroup);
-        marker.bindPopup(`
-          <div style="padding: 12px; min-width: 220px;">
-            <strong style="font-size: 1.05rem; color: ${route.color};">${wp.name}</strong><br>
-            <span style="font-size: 0.85rem; color: #64748b; margin-top: 4px; display: block;">
-              ${isTerminal ? (idx === 0 ? "🚌 Origin" : "🏁 Terminal") : `📍 Stop ${idx}`} • Route ${route.id}
-            </span>
-          </div>
-        `);
+        marker.on("click", () => {
+          onLocationSelect({
+            name: wp.name,
+            lat: wp.lat,
+            lng: wp.lng,
+            info: `${isTerminal ? (idx === 0 ? "Origin" : "Terminal") : `Stop ${idx}`} on Route ${route.id}. This stop is part of the University of the Punjab bus network.`,
+            address: "Punjab University, Lahore, Pakistan",
+            image: "",
+          });
+        });
       });
 
       // Draw route using leaflet-routing-machine
@@ -290,14 +295,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
       const marker = L.marker([location.lat, location.lng], { icon }).addTo(
         mapRef.current!,
-      ).bindPopup(`
-          <div style="padding: 12px; min-width: 220px;">
-            <h3 style="margin: 0 0 10px 0; color: #1e3a8a; font-size: 1.1rem; font-weight: 600;">${location.name}</h3>
-            ${location.image ? `<img src="${location.image}" alt="${location.name}" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;" onerror="this.style.display='none'" />` : ""}
-            <p style="margin: 0 0 8px 0; font-size: 0.85rem; color: #64748b;">${location.info}</p>
-            <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;"><i class="fa-solid fa-map-marker-alt"></i> ${location.address}</p>
-          </div>
-        `);
+      );
 
       marker.on("click", () => onLocationSelect(location));
       locationMarkersRef.current.push(marker);
@@ -337,6 +335,38 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       });
     }
   }, [radiusCircle]);
+
+  // Handle directions to a specific location
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (directionsControlRef.current) {
+      mapRef.current.removeControl(directionsControlRef.current);
+      directionsControlRef.current = null;
+    }
+
+    if (showDirectionsTo && userLocation) {
+      const control = L.Routing.control({
+        waypoints: [
+          L.latLng(userLocation.lat, userLocation.lng),
+          L.latLng(showDirectionsTo.lat, showDirectionsTo.lng),
+        ],
+        lineOptions: {
+          styles: [{ color: "#3b82f6", weight: 6, opacity: 0.8 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0,
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        show: true,
+        routeWhileDragging: false,
+        createMarker: () => null,
+      }).addTo(mapRef.current);
+
+      directionsControlRef.current = control;
+    }
+  }, [showDirectionsTo, userLocation]);
 
   return (
     <div

@@ -47,12 +47,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   const navItems = [
-    { label: 'Campuses', action: onShowCampuses },
+    { label: 'Departments', action: onShowCampuses },
     { label: 'Show all Routes', action: onShowAllRoutes },
-    { label: 'Bus Challan', link: '/bus-challan' },
     { label: 'Hostels', action: onShowHostels },
     { label: 'Grounds', action: onShowGrounds },
     { label: 'Gates', action: onShowGates },
+    { label: 'Bus Challan', link: '/bus-challan' },
   ];
 
   return (

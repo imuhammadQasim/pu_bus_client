@@ -25,9 +25,8 @@ export const Footer: React.FC = () => {
         </a>
       </div>
       <div className="flex items-center gap-2 font-medium">
-        <span>Powered by</span>
+        <span>Developed by </span>
         <strong className="text-primary font-bold">
-          Developed by{" "}
           <a
             target="_blank"
             rel="noopener noreferrer"

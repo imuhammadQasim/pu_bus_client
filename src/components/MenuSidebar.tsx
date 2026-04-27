@@ -26,7 +26,7 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { label: 'Campuses', action: onShowCampuses },
+    { label: 'Departments', action: onShowCampuses },
     { label: 'Show all Routes', action: onShowAllRoutes },
     { label: 'Bus Challan', link: '/bus-challan' },
     { label: 'Hostels', action: onShowHostels },

@@ -4,17 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import { Loader2, Mail, ArrowRight, ArrowLeft } from "lucide-react";
 
-export const Login = () => {
+export const ForgotPassword = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,18 +20,18 @@ export const Login = () => {
       toast({ title: "Error", description: "Please enter a valid email" });
       return;
     }
-    if (!password) {
-      toast({ title: "Error", description: "Password is required" });
-      return;
-    }
 
     try {
       setIsLoading(true);
-      await login(email, password);
-      toast({ title: "Success", description: "Welcome back to PU Bus Portal!" });
-      navigate("/");
+      // Simulating API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast({ 
+        title: "OTP Sent", 
+        description: "Check your email for the verification code." 
+      });
+      navigate("/verify-otp", { state: { email } });
     } catch (error) {
-      toast({ title: "Error", description: "Invalid credentials. Please try again." });
+      toast({ title: "Error", description: "Failed to send OTP. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -56,13 +53,13 @@ export const Login = () => {
             />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">University of the Punjab</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Bus Tracking & Management System</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Reset your account password</p>
         </div>
 
         <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-500">
           <CardHeader className="pb-4">
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardTitle className="text-2xl font-bold">Forgot Password</CardTitle>
+            <CardDescription>Enter your email to receive a 6-digit verification code</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -82,25 +79,6 @@ export const Login = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between ml-1">
-                  <Label htmlFor="password" text-sm font-semibold>Password</Label>
-                  <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">Forgot password?</Link>
-                </div>
-                <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-xl"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
@@ -109,11 +87,11 @@ export const Login = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Authenticating...
+                    Sending OTP...
                   </>
                 ) : (
                   <>
-                    Login to Portal
+                    Send Reset Code
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -121,12 +99,13 @@ export const Login = () => {
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                New student?{" "}
-                <Link to="/signup" className="text-primary hover:text-primary/80 underline-offset-4 hover:underline font-bold transition-colors">
-                  Create an account
-                </Link>
-              </p>
+              <Link 
+                to="/login" 
+                className="inline-flex items-center text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors font-medium"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Login
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -139,5 +118,4 @@ export const Login = () => {
   );
 };
 
-export default Login;
-
+export default ForgotPassword;

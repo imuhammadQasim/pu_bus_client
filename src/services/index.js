@@ -21,6 +21,18 @@ const apiService = {
   async getLiveBuses() {
     return await Fetch.get(`${this._url}/buses/get-live-buses`);
   },
+  async signup(userData) {
+    return await Fetch.post(`${this._url}/auth/signup`, userData);
+  },
+  async verifyOTP(email, otp) {
+    return await Fetch.post(`${this._url}/auth/verify-otp`, { email, otp });
+  },
+  async signin(email, password) {
+    return await Fetch.post(`${this._url}/auth/signin`, { email, password });
+  },
+  async getProfile() {
+    return await Fetch.get(`${this._url}/auth/me`);
+  },
 };
 
 export default apiService;

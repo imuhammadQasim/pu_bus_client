@@ -12,7 +12,7 @@ import {
 import { Route } from "@/data/routeData";
 import { getDistance, calculateTravelTime } from "@/hooks/useGeolocation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface RouteCardProps {
   route: Route;
@@ -32,23 +32,24 @@ export const RouteCard: React.FC<RouteCardProps> = ({
   userLocation,
 }) => {
   const { user, addFavoriteRoute, removeFavoriteRoute, isFavoriteRoute } = useAuth();
-  const { toast } = useToast();
 
   const isFavorited = isFavoriteRoute(route.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) {
-      toast({ title: "Error", description: "Please login first" });
+      toast.error("Authentication Required", {
+        description: "Please login to add routes to your favorites."
+      });
       return;
     }
 
     if (isFavorited) {
       removeFavoriteRoute(route.id);
-      toast({ title: "Removed", description: "Route removed from favorites" });
+      toast.success("Removed from favorites");
     } else {
       addFavoriteRoute(route.id);
-      toast({ title: "Added", description: "Route added to favorites" });
+      toast.success("Added to favorites");
     }
   };
   // Calculate nearest stop and travel times

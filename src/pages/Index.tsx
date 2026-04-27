@@ -7,6 +7,7 @@ import { MapControls } from "@/components/MapControls";
 import { MenuSidebar } from "@/components/MenuSidebar";
 import { Footer } from "@/components/Footer";
 import { LoginModal } from "@/components/LoginModal";
+import { LocationSidebar } from "@/components/LocationSidebar";
 import { Location, Route } from "@/data/routeData";
 import { useOperatingStatus } from "@/hooks/useOperatingStatus";
 import { useGeolocation, getDistance } from "@/hooks/useGeolocation";
@@ -17,6 +18,9 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [showDirectionsTo, setShowDirectionsTo] = useState<Location | null>(null);
+  const [pendingDirections, setPendingDirections] = useState<Location | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<number | string | null>(
     null,
   );
@@ -234,6 +238,32 @@ const Index = () => {
     }
   }, [selectedMarker, choosingOnMap, toast]);
 
+  const handleLocationSelect = useCallback((location: Location) => {
+    setSelectedLocation(location);
+    setShowDirectionsTo(null); // Clear previous directions when new location selected
+  }, []);
+
+  const handleGetDirections = useCallback((location: Location) => {
+    if (userLocation) {
+      setShowDirectionsTo(location);
+    } else {
+      setPendingDirections(location);
+      getLocation();
+      toast({
+        title: "Requesting Location",
+        description: "Please allow location access to see directions.",
+      });
+    }
+  }, [userLocation, getLocation, toast]);
+
+  // Effect to handle directions after location is granted
+  useEffect(() => {
+    if (userLocation && pendingDirections) {
+      setShowDirectionsTo(pendingDirections);
+      setPendingDirections(null);
+    }
+  }, [userLocation, pendingDirections]);
+
   if (isLoading) {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
   }
@@ -296,8 +326,20 @@ const Index = () => {
             radiusCircle={radiusCircle}
             choosingOnMap={choosingOnMap}
             showAllRoutes={showAllRoutes}
-            onLocationSelect={() => {}}
+            onLocationSelect={handleLocationSelect}
             allRoutes={apiRoutes}
+            showDirectionsTo={showDirectionsTo}
+          />
+
+          <LocationSidebar 
+            location={selectedLocation} 
+            userLocation={userLocation}
+            onClose={() => {
+              setSelectedLocation(null);
+              setShowDirectionsTo(null);
+            }} 
+            onGetDirections={handleGetDirections}
+            isActiveRoute={!!selectedLocation && !!showDirectionsTo && selectedLocation.lat === showDirectionsTo.lat && selectedLocation.lng === showDirectionsTo.lng}
           />
         </div>
       </div>

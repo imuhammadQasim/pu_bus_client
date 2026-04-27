@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import apiService from "@/services/index";
 
 export interface User {
   id?: string;
@@ -13,8 +14,9 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signup: (userData: Omit<User, "id"> & { password: string }) => Promise<void>;
+  signup: (userData: Omit<User, "id"> & { password: string }) => Promise<any>;
   login: (email: string, password: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<void>;
   logout: () => void;
   addFavoriteRoute: (routeId: number) => void;
   removeFavoriteRoute: (routeId: number) => void;
@@ -28,37 +30,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [favorites, setFavorites] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in (from localStorage)
+  // Check if user is already logged in (from localStorage token)
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse stored user:", error);
-        localStorage.removeItem("user");
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      const storedFavs = JSON.parse(localStorage.getItem("favorites") || "[]");
+      setFavorites(storedFavs.map(Number)); // Ensure they are numbers
+
+      if (token) {
+        try {
+          const response: any = await apiService.getProfile();
+          if (response && response.data) {
+            setUser(response.data);
+          } else {
+            localStorage.removeItem("token");
+          }
+        } catch (error) {
+          console.error("Failed to fetch user profile:", error);
+          localStorage.removeItem("token");
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    fetchUser();
   }, []);
 
   const signup = async (userData: Omit<User, "id"> & { password: string }) => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call when backend is ready
-      // For now, we'll simulate signup
-      const newUser: User = {
-        id: Date.now().toString(),
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phoneNumber: userData.phoneNumber,
-        favoriteRoutes: [],
-      };
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
+      const response = await apiService.signup(userData);
+      return response;
     } catch (error) {
       console.error("Signup failed:", error);
       throw error;
@@ -70,18 +75,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call when backend is ready
-      // For now, we'll simulate login
-      const mockUser: User = {
-        id: Date.now().toString(),
-        firstName: "Demo",
-        lastName: "User",
-        email: email,
-        phoneNumber: "03001234567",
-        favoriteRoutes: [],
-      };
-      setUser(mockUser);
-      localStorage.setItem("user", JSON.stringify(mockUser));
+      const response: any = await apiService.signin(email, password);
+      
+      if (response && response.data) {
+        const { user: userData, token } = response.data;
+        setUser(userData);
+        localStorage.setItem("token", token);
+      }
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
@@ -90,41 +90,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const verifyOTP = async (email: string, otp: string) => {
+    try {
+      setIsLoading(true);
+      const response: any = await apiService.verifyOTP(email, otp);
+      
+      if (response && response.data) {
+        const { user: userData, token } = response.data;
+        setUser(userData);
+        localStorage.setItem("token", token);
+      }
+    } catch (error) {
+      console.error("OTP Verification failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
-  const addFavoriteRoute = (routeId: number) => {
-    if (user) {
-      const updatedUser = {
-        ...user,
-        favoriteRoutes: [...(user.favoriteRoutes || []), routeId],
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+  const addFavoriteRoute = (routeId: number | string) => {
+    const id = Number(routeId);
+    if (!favorites.includes(id)) {
+      const updatedFavs = [...favorites, id];
+      setFavorites(updatedFavs);
+      localStorage.setItem("favorites", JSON.stringify(updatedFavs));
+      if (user) {
+        setUser({ ...user, favoriteRoutes: updatedFavs });
+      }
     }
   };
 
-  const removeFavoriteRoute = (routeId: number) => {
+  const removeFavoriteRoute = (routeId: number | string) => {
+    const id = Number(routeId);
+    const updatedFavs = favorites.filter((favId) => favId !== id);
+    setFavorites(updatedFavs);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavs));
     if (user) {
-      const updatedUser = {
-        ...user,
-        favoriteRoutes: (user.favoriteRoutes || []).filter(id => id !== routeId),
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser({ ...user, favoriteRoutes: updatedFavs });
     }
   };
 
-  const isFavoriteRoute = (routeId: number): boolean => {
-    return (user?.favoriteRoutes || []).includes(routeId);
+  const isFavoriteRoute = (routeId: number | string): boolean => {
+    return favorites.includes(Number(routeId));
   };
 
   const updateProfile = async (userData: Partial<User>) => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call when backend is ready
       if (user) {
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
@@ -146,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isLoading,
         signup,
         login,
+        verifyOTP,
         logout,
         addFavoriteRoute,
         removeFavoriteRoute,
