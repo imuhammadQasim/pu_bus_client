@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Menu, MapPin, Loader2, X, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu, MapPin, Loader2, X, User, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Center: Desktop Navigation */}
       {!isMobile && (
-        <div className="hidden lg:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/10">
+        <div className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/10">
           {navItems.map((item: any, i) => (
             item.link ? (
               <Link
@@ -139,46 +139,64 @@ export const Navbar: React.FC<NavbarProps> = ({
         </Button>
 
 
-        {/* User Menu */}
+        {/* User Actions */}
         {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <div className="flex items-center gap-2">
+            <Link to="/profile">
               <Button
                 variant="outline"
-                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl px-4 transition-all"
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm">{user.firstName}</span>
+                <span className="hidden sm:inline text-sm font-bold">{user.firstName}</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem className="text-xs text-muted-foreground">
-                {user.email}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="cursor-pointer">
-                  View Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-red-600">
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl transition-all"
+                >
+                  <ChevronRight className="h-4 w-4 rotate-90" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1 shadow-2xl border-slate-100 dark:border-slate-800">
+                <div className="px-3 py-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account</p>
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
+                <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/5 focus:text-primary cursor-pointer">
+                  <Link to="/profile" className="flex items-center w-full px-2 py-2 font-semibold text-sm">
+                    <User className="mr-2 h-4 w-4" />
+                    View Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
+                <DropdownMenuItem 
+                  onClick={logout} 
+                  className="rounded-xl focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer px-2 py-2 font-semibold text-sm"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <Link to="/login">
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl font-bold transition-all"
               >
                 Login
               </Button>
             </Link>
             <Link to="/signup">
-              <Button className="bg-amber-500 hover:bg-amber-600 text-white">
+              <Button className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all active:scale-95">
                 Sign Up
               </Button>
             </Link>

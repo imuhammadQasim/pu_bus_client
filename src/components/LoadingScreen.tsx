@@ -86,7 +86,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
         {/* Title */}
         <div className={`text-center transition-all duration-700 ${showText ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <h1 className="font-poppins text-2xl md:text-4xl font-bold text-white mb-2">
-            Punjab University Bus Routes
+            Punjab University Bus System
           </h1>
           <span className="text-lg text-slate-200 font-medium tracking-wide">
             Real-Time GIS Navigation System
