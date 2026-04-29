@@ -39,6 +39,18 @@ const apiService = {
   async resetPassword(email,otp,password) {
     return await Fetch.post(`${this._url}/auth/reset-password`, { email,otp,password });
   },
+  async getLostAndFound() {
+    return await Fetch.get(`${this._url}/lost-found`);
+  },
+  async addLostAndFound(itemData) {
+    return await Fetch.post(`${this._url}/lost-found`, itemData);
+  },
+  async updateLostAndFound(id, itemData) {
+    return await Fetch.put(`${this._url}/lost-found/${id}`, itemData);
+  },
+  async deleteLostAndFound(id) {
+    return await Fetch.delete(`${this._url}/lost-found/${id}`);
+  },
 };
 
 export default apiService;

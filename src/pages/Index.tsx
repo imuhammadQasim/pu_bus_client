@@ -122,6 +122,7 @@ const Index = () => {
     fetchAllLocations();
   }, []);
 
+
   const handleLocateMe = useCallback(() => {
     if (userLocation) {
       clearLocation();
@@ -224,6 +225,34 @@ const Index = () => {
       setShowAllRoutes(false);
     }
   }, [userLocation, selectedMarker, toast, apiRoutes]);
+
+  // Handle query parameters for cross-page navigation
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const show = params.get('show');
+    const locate = params.get('locate');
+
+    if (show) {
+      setTimeout(() => {
+        if (show === 'allRoutes') {
+          handleShowAllRoutes();
+        } else if (['campuses', 'hostels', 'grounds', 'gates'].includes(show)) {
+          handleShowLocations(show as any);
+        }
+      }, 500); // Small delay to ensure data is loaded
+    }
+
+    if (locate === 'true') {
+      setTimeout(() => {
+        handleLocateMe();
+      }, 1000);
+    }
+
+    // Clean up URL without refreshing
+    if (show || locate) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [apiCampuses, apiHostels, apiGrounds, apiGates, handleShowLocations, handleShowAllRoutes, handleLocateMe]);
 
   const handleToggleChooseOnMap = useCallback(() => {
     if (selectedMarker) {

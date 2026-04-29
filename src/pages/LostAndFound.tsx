@@ -12,25 +12,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+import apiService from '@/services';
+
+interface Route {
+  id: string;
+  name: string;
+}
+
 interface Item {
   id: string;
   type: 'lost' | 'found';
   category: string;
   title: string;
-  route: string;
+  routeId: string;
+  route?: { name: string };
   description: string;
   contact: string;
-  date: string;
+  createdAt: string;
   status: 'active' | 'resolved';
-  userId: string | undefined;
+  userId: string;
 }
 
 const CATEGORIES = ['ID Card', 'Wallet', 'Bag', 'Electronics', 'Books', 'Other'];
-const ROUTES = ['Route 1', 'Route 2', 'Route 3', 'Route 4', 'Route 5', 'Route 6'];
 
 export default function LostAndFound() {
   const { user } = useAuth();
   const [items, setItems] = useState<Item[]>([]);
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('lost');
 
@@ -39,67 +48,92 @@ export default function LostAndFound() {
     type: 'lost',
     category: '',
     title: '',
-    route: '',
+    routeId: '',
     description: '',
     contact: ''
   });
 
   useEffect(() => {
-    // Load from local storage for dummy data
-    const savedItems = localStorage.getItem('lostAndFoundItems');
-    if (savedItems) {
-      setItems(JSON.parse(savedItems));
-    } else {
-      // Dummy items
-      const dummy: Item[] = [
-        { id: '1', type: 'lost', category: 'Wallet', title: 'Black Leather Wallet', route: 'Route 1', description: 'Lost my wallet around 9 AM near Dharampura stop. Contains my PU ID card.', contact: '0300-0000000', date: new Date().toISOString(), status: 'active', userId: 'dummy1' },
-        { id: '2', type: 'found', category: 'ID Card', title: 'Found Student ID Card', route: 'Route 4', description: 'Found a student card of BS CS department on the bus seat.', contact: 'ahmad@example.com', date: new Date().toISOString(), status: 'active', userId: 'dummy2' }
-      ];
-      setItems(dummy);
-      localStorage.setItem('lostAndFoundItems', JSON.stringify(dummy));
-    }
+    fetchData();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [itemsRes, routesRes] = await Promise.all([
+        apiService.getLostAndFound(),
+        apiService.getRoutes()
+      ]);
+      
+      setItems(itemsRes.data.items);
+      setRoutes(routesRes.data.routes);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error('Please login to post an item');
       return;
     }
     
-    if (!formData.category || !formData.title || !formData.route) {
+    if (!formData.category || !formData.title || !formData.routeId) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const newItem: Item = {
-      id: Date.now().toString(),
-      ...formData,
-      date: new Date().toISOString(),
-      status: 'active',
-      userId: user.id || user.email
-    } as Item;
-
-    const newItems = [newItem, ...items];
-    setItems(newItems);
-    localStorage.setItem('lostAndFoundItems', JSON.stringify(newItems));
-    setIsModalOpen(false);
-    toast.success('Item posted successfully!');
-    setFormData({ type: 'lost', category: '', title: '', route: '', description: '', contact: '' });
+    try {
+      const res = await apiService.addLostAndFound(formData);
+      setItems([res.data, ...items]);
+      setIsModalOpen(false);
+      toast.success('Item posted successfully!');
+      setFormData({ type: 'lost', category: '', title: '', routeId: '', description: '', contact: '' });
+      // Refresh to get full object with relations if needed, or just rely on state
+      fetchData();
+    } catch (error: any) {
+      toast.error(error || 'Failed to post item');
+    }
   };
 
-  const handleResolve = (id: string) => {
-    const newItems = items.map(item => item.id === id ? { ...item, status: 'resolved' as const } : item);
-    setItems(newItems);
-    localStorage.setItem('lostAndFoundItems', JSON.stringify(newItems));
-    toast.success('Marked as resolved!');
+  const handleResolve = async (id: string) => {
+    try {
+      await apiService.updateLostAndFound(id, { status: 'resolved' });
+      setItems(items.map(item => item.id === id ? { ...item, status: 'resolved' as const } : item));
+      toast.success('Marked as resolved!');
+    } catch (error: any) {
+      toast.error(error || 'Failed to resolve item');
+    }
   };
 
   const filteredItems = items.filter(item => item.type === activeTab);
 
-  // dummy nav props
-  const dummyNavbarProps = {
-    onLocateMe: () => {}, isLocating: false, hasLocation: false, onShowCampuses: () => {}, onShowHostels: () => {}, onShowGrounds: () => {}, onShowGates: () => {}, onShowAllRoutes: () => {}, onMenuToggle: () => {}
+  const handleNavAction = (actionName: string) => {
+    // Navigate to home with a query param to trigger the action
+    const routeMap: Record<string, string> = {
+      campuses: 'campuses',
+      hostels: 'hostels',
+      grounds: 'grounds',
+      gates: 'gates',
+      allRoutes: 'allRoutes'
+    };
+    navigate(`/?show=${routeMap[actionName] || ''}`);
+  };
+
+  const navProps = {
+    onLocateMe: () => navigate('/?locate=true'),
+    isLocating: false,
+    hasLocation: false,
+    onShowCampuses: () => handleNavAction('campuses'),
+    onShowHostels: () => handleNavAction('hostels'),
+    onShowGrounds: () => handleNavAction('grounds'),
+    onShowGates: () => handleNavAction('gates'),
+    onShowAllRoutes: () => handleNavAction('allRoutes'),
+    onMenuToggle: () => {}
   };
 
   return (
@@ -108,7 +142,7 @@ export default function LostAndFound() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-3xl" />
       
-      <Navbar {...dummyNavbarProps} />
+      <Navbar {...navProps} />
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -173,10 +207,10 @@ export default function LostAndFound() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Route</label>
-                      <Select value={formData.route} onValueChange={(val) => setFormData({...formData, route: val})}>
+                      <Select value={formData.routeId} onValueChange={(val) => setFormData({...formData, routeId: val})}>
                         <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Route" /></SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          {ROUTES.map(r => <SelectItem key={r} value={r} className="rounded-lg cursor-pointer">{r}</SelectItem>)}
+                          {routes.map(r => <SelectItem key={r.id} value={r.id} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -206,7 +240,12 @@ export default function LostAndFound() {
           </TabsList>
           
           <TabsContent value={activeTab} className="mt-8">
-            {filteredItems.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-slate-500 font-medium">Loading items...</p>
+              </div>
+            ) : filteredItems.length === 0 ? (
               <div className="text-center py-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 shadow-sm">
                 <PackageOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
                 <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">No {activeTab} items reported yet</h3>
@@ -229,7 +268,7 @@ export default function LostAndFound() {
                     
                     <div className="flex items-center text-xs font-bold text-primary bg-primary/5 w-fit px-2.5 py-1 rounded-md mb-4 border border-primary/10">
                       <MapPin className="w-3.5 h-3.5 mr-1.5" />
-                      {item.route}
+                      {item.route?.name || 'Unknown Route'}
                     </div>
                     
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 line-clamp-3 flex-1 font-medium leading-relaxed">
@@ -239,7 +278,7 @@ export default function LostAndFound() {
                     <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-auto">
                       <div className="flex items-center text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wide">
                         <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                        {new Date(item.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        {new Date(item.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </div>
                       
                       <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
