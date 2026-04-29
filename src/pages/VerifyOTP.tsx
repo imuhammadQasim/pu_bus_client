@@ -11,6 +11,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import apiService from "@/services";
 
 export const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -42,10 +43,10 @@ export const VerifyOTP = () => {
     try {
       setIsLoading(true);
       // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const resp = await apiService.resetPassword(email,otp,newPassword);
       toast({ 
         title: "Success", 
-        description: "Your password has been reset successfully." 
+        description: resp.message 
       });
       navigate("/login");
     } catch (error) {

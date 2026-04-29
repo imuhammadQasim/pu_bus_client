@@ -80,7 +80,7 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-                {user.firstName[0]}
+                {user.firstName}
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white leading-none mb-1">

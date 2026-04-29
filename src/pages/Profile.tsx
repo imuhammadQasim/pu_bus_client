@@ -46,7 +46,7 @@ export const Profile = () => {
 
         // Filter favorite routes
         const favorites = routes.filter(route =>
-          user.favoriteRoutes?.includes(route.id)
+          user.favoriteRoutes?.some(favId => String(favId) === String(route.id))
         );
         setFavoriteRoutes(favorites);
       } catch (error) {

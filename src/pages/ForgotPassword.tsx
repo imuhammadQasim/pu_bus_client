@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, ArrowRight, ArrowLeft } from "lucide-react";
+import apiService from "@/services";
 
 export const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -23,15 +24,14 @@ export const ForgotPassword = () => {
 
     try {
       setIsLoading(true);
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await apiService.forgotPassword(email);
       toast({ 
         title: "OTP Sent", 
-        description: "Check your email for the verification code." 
+        description: response?.message 
       });
       navigate("/verify-otp", { state: { email } });
     } catch (error) {
-      toast({ title: "Error", description: "Failed to send OTP. Please try again." });
+      toast({ title: "Error", description: error.message || "Failed to send OTP"});
     } finally {
       setIsLoading(false);
     }

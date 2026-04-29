@@ -33,6 +33,12 @@ const apiService = {
   async getProfile() {
     return await Fetch.get(`${this._url}/auth/me`);
   },
+  async forgotPassword(email) {
+    return await Fetch.post(`${this._url}/auth/forgot-password`, { email });
+  },
+  async resetPassword(email,otp,password) {
+    return await Fetch.post(`${this._url}/auth/reset-password`, { email,otp,password });
+  },
 };
 
 export default apiService;

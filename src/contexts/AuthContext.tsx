@@ -7,7 +7,7 @@ export interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
-  favoriteRoutes?: number[];
+  favoriteRoutes?: (number | string)[];
 }
 
 interface AuthContextType {
@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<(number | string)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is already logged in (from localStorage token)
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
       const storedFavs = JSON.parse(localStorage.getItem("favorites") || "[]");
-      setFavorites(storedFavs.map(Number)); // Ensure they are numbers
+      setFavorites(storedFavs); // Ensure they stay as originally saved
 
       if (token) {
         try {
@@ -114,9 +114,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addFavoriteRoute = (routeId: number | string) => {
-    const id = Number(routeId);
-    if (!favorites.includes(id)) {
-      const updatedFavs = [...favorites, id];
+    const isAlreadyFav = favorites.some(fav => String(fav) === String(routeId));
+    if (!isAlreadyFav) {
+      const updatedFavs = [...favorites, routeId];
       setFavorites(updatedFavs);
       localStorage.setItem("favorites", JSON.stringify(updatedFavs));
       if (user) {
@@ -126,8 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const removeFavoriteRoute = (routeId: number | string) => {
-    const id = Number(routeId);
-    const updatedFavs = favorites.filter((favId) => favId !== id);
+    const updatedFavs = favorites.filter((favId) => String(favId) !== String(routeId));
     setFavorites(updatedFavs);
     localStorage.setItem("favorites", JSON.stringify(updatedFavs));
     if (user) {
@@ -136,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const isFavoriteRoute = (routeId: number | string): boolean => {
-    return favorites.includes(Number(routeId));
+    return favorites.some(favId => String(favId) === String(routeId));
   };
 
   const updateProfile = async (userData: Partial<User>) => {
