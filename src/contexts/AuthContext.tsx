@@ -43,8 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (token) {
         try {
           const response: any = await apiService.getProfile();
-          if (response && response.data) {
-            setUser(response.data);
+          if (response && response.data && response.data.user) {
+            const userData = response.data.user;
+            setUser({ ...userData, favoriteRoutes: storedFavs });
           } else {
             localStorage.removeItem("token");
           }

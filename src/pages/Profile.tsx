@@ -28,9 +28,17 @@ export const Profile = () => {
   });
 
   React.useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       navigate("/");
       return;
+    }
+
+    if (user) {
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        phoneNumber: user.phoneNumber || "",
+      });
     }
 
     const fetchRoutes = async () => {
@@ -55,7 +63,7 @@ export const Profile = () => {
     };
 
     fetchRoutes();
-  }, [user, navigate]);
+  }, [user, navigate, authLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
