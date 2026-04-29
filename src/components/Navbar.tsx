@@ -64,6 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: 'Hostels', action: () => handleAction(onShowHostels) },
     { label: 'Grounds', action: () => handleAction(onShowGrounds) },
     { label: 'Gates', action: () => handleAction(onShowGates) },
+    { label: 'Lost & Found', link: '/lost-and-found' },
     { label: 'Bus Challan', link: '/bus-challan' },
   ];
 

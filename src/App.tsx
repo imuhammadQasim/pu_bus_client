@@ -12,6 +12,7 @@ import BusChallan from "./pages/BusChallan";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyOTP from "./pages/VerifyOTP";
 import SignupVerification from "./pages/SignupVerification";
+import LostAndFound from "./pages/LostAndFound";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/signup-verification" element={<SignupVerification />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/bus-challan" element={<BusChallan />} />
+            <Route path="/lost-and-found" element={<LostAndFound />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

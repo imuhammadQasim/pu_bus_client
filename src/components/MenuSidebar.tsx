@@ -41,6 +41,7 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
     { label: 'Departments', action: () => handleAction(onShowCampuses) },
     { label: 'Show all Routes', action: () => handleAction(onShowAllRoutes) },
     { label: 'Bus Challan', link: '/bus-challan' },
+    { label: 'Lost & Found', link: '/lost-and-found' },
     { label: 'Hostels', action: () => handleAction(onShowHostels) },
     { label: 'Grounds', action: () => handleAction(onShowGrounds) },
     { label: 'Gates', action: () => handleAction(onShowGates) },
