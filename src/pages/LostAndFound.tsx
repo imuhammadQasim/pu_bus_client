@@ -65,8 +65,18 @@ export default function LostAndFound() {
         apiService.getRoutes()
       ]);
       
-      setItems(itemsRes.data.items);
-      setRoutes(routesRes.data.routes);
+      setItems(itemsRes.data?.items || itemsRes.data || itemsRes.items || []);
+      
+      const routesData = routesRes;
+      let extractedRoutes: Route[] = [];
+      if (Array.isArray(routesData)) {
+        extractedRoutes = routesData;
+      } else if (routesData?.data) {
+        extractedRoutes = Array.isArray(routesData.data) ? routesData.data : routesData.data.routes || [];
+      } else if (routesData?.routes) {
+        extractedRoutes = routesData.routes;
+      }
+      setRoutes(extractedRoutes);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -210,7 +220,7 @@ export default function LostAndFound() {
                       <Select value={formData.routeId} onValueChange={(val) => setFormData({...formData, routeId: val})}>
                         <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Route" /></SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          {routes.map(r => <SelectItem key={r.id} value={r.id} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
+                          {routes.map(r => <SelectItem key={String(r.id)} value={String(r.id)} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
