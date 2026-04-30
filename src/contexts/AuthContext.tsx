@@ -7,6 +7,7 @@ export interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
+  role?: 'STUDENT' | 'ADMIN';
   favoriteRoutes?: (number | string)[];
 }
 

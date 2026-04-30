@@ -41,6 +41,7 @@ export default function LostAndFound() {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('lost');
 
   // Form State
@@ -51,6 +52,16 @@ export default function LostAndFound() {
     routeId: '',
     description: '',
     contact: ''
+  });
+
+  const [reportFormData, setReportFormData] = useState({
+    type: 'other',
+    subject: '',
+    conductorName: '',
+    busNumber: '',
+    description: '',
+    priority: 'medium',
+    routeId: ''
   });
 
   useEffect(() => {
@@ -110,6 +121,36 @@ export default function LostAndFound() {
     }
   };
 
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error('Please login to submit a report');
+      return;
+    }
+
+    if (!reportFormData.description) {
+      toast.error('Description is required');
+      return;
+    }
+
+    try {
+      await apiService.createReport(reportFormData);
+      setIsReportModalOpen(false);
+      toast.success('Report submitted to admin successfully!');
+      setReportFormData({ 
+        type: 'other', 
+        subject: '', 
+        conductorName: '', 
+        busNumber: '', 
+        description: '', 
+        priority: 'medium', 
+        routeId: '' 
+      });
+    } catch (error: any) {
+      toast.error(error || 'Failed to submit report');
+    }
+  };
+
   const handleResolve = async (id: string) => {
     try {
       await apiService.updateLostAndFound(id, { status: 'resolved' });
@@ -161,86 +202,176 @@ export default function LostAndFound() {
             <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Report lost items or help return found belongings to fellow students.</p>
           </div>
           
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 gap-2 h-12 px-6 font-bold transition-all active:scale-95">
-                <Plus className="w-5 h-5" />
-                Report Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] rounded-2xl border-none shadow-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">Report an Item</DialogTitle>
-                <DialogDescription>Please provide details about the item you lost or found.</DialogDescription>
-              </DialogHeader>
-              
-              {!user ? (
-                <div className="py-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl mt-4 border border-dashed border-slate-200 dark:border-slate-800">
-                  <PackageOpen className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-                  <p className="text-slate-600 dark:text-slate-400 font-medium mb-4">You must be logged in to post an item.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-3 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                    <Button 
-                      type="button" 
-                      variant="ghost"
-                      onClick={() => setFormData({...formData, type: 'lost'})} 
-                      className={`h-10 rounded-lg font-bold transition-all ${formData.type === 'lost' ? 'bg-white dark:bg-slate-700 shadow-sm text-red-600' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      I Lost Something
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="ghost"
-                      onClick={() => setFormData({...formData, type: 'found'})} 
-                      className={`h-10 rounded-lg font-bold transition-all ${formData.type === 'found' ? 'bg-white dark:bg-slate-700 shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      I Found Something
-                    </Button>
+          <div className="flex flex-wrap gap-3">
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 gap-2 h-12 px-6 font-bold transition-all active:scale-95">
+                  <Plus className="w-5 h-5" />
+                  Report Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] rounded-2xl border-none shadow-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold">Report an Item</DialogTitle>
+                  <DialogDescription>Please provide details about the item you lost or found.</DialogDescription>
+                </DialogHeader>
+                
+                {!user ? (
+                  <div className="py-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl mt-4 border border-dashed border-slate-200 dark:border-slate-800">
+                    <PackageOpen className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                    <p className="text-slate-600 dark:text-slate-400 font-medium mb-4">You must be logged in to post an item.</p>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Title</label>
-                    <Input placeholder="e.g. Black Leather Wallet" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" required />
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-3 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                      <Button 
+                        type="button" 
+                        variant="ghost"
+                        onClick={() => setFormData({...formData, type: 'lost'})} 
+                        className={`h-10 rounded-lg font-bold transition-all ${formData.type === 'lost' ? 'bg-white dark:bg-slate-700 shadow-sm text-red-600' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        I Lost Something
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="ghost"
+                        onClick={() => setFormData({...formData, type: 'found'})} 
+                        className={`h-10 rounded-lg font-bold transition-all ${formData.type === 'found' ? 'bg-white dark:bg-slate-700 shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        I Found Something
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Title</label>
+                      <Input placeholder="e.g. Black Leather Wallet" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" required />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Category</label>
+                        <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val})}>
+                          <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            {CATEGORIES.map(c => <SelectItem key={c} value={c} className="rounded-lg cursor-pointer">{c}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Route</label>
+                        <Select value={formData.routeId} onValueChange={(val) => setFormData({...formData, routeId: val})}>
+                          <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Route" /></SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            {routes.map(r => <SelectItem key={String(r.id)} value={String(r.id)} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Description</label>
+                      <Textarea placeholder="More details..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl resize-none bg-slate-50 focus:bg-white dark:bg-slate-900" rows={3} required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Contact Info</label>
+                      <Input placeholder="Phone or email (visible to others)" value={formData.contact} onChange={(e) => setFormData({...formData, contact: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" required />
+                    </div>
+                    
+                    <Button type="submit" className="w-full h-12 rounded-xl text-md font-bold mt-4 shadow-lg shadow-primary/20">Submit Report</Button>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl shadow-sm gap-2 h-12 px-6 font-bold transition-all active:scale-95">
+                  <Plus className="w-5 h-5" />
+                  Report Issue
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] rounded-2xl border-none shadow-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-red-600">Report an Issue</DialogTitle>
+                  <DialogDescription>Report a conductor, bus issue, or any other problem directly to admin.</DialogDescription>
+                </DialogHeader>
+                
+                {!user ? (
+                  <div className="py-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl mt-4 border border-dashed border-slate-200 dark:border-slate-800">
+                    <PackageOpen className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                    <p className="text-slate-600 dark:text-slate-400 font-medium mb-4">You must be logged in to submit a report.</p>
                   </div>
-                  
+                ) : (
+                  <form onSubmit={handleReportSubmit} className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Category</label>
-                      <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val})}>
-                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Report Type</label>
+                      <Select value={reportFormData.type} onValueChange={(val) => setReportFormData({...reportFormData, type: val})}>
+                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Type" /></SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          {CATEGORIES.map(c => <SelectItem key={c} value={c} className="rounded-lg cursor-pointer">{c}</SelectItem>)}
+                          <SelectItem value="conductor" className="rounded-lg cursor-pointer">Conductor Issue</SelectItem>
+                          <SelectItem value="driver" className="rounded-lg cursor-pointer">Driver Issue</SelectItem>
+                          <SelectItem value="bus" className="rounded-lg cursor-pointer">Bus Condition/Issue</SelectItem>
+                          <SelectItem value="route" className="rounded-lg cursor-pointer">Route/Timing Issue</SelectItem>
+                          <SelectItem value="app" className="rounded-lg cursor-pointer">App Bug/Feedback</SelectItem>
+                          <SelectItem value="other" className="rounded-lg cursor-pointer">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Route</label>
-                      <Select value={formData.routeId} onValueChange={(val) => setFormData({...formData, routeId: val})}>
-                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Route" /></SelectTrigger>
+                      <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Priority</label>
+                      <Select value={reportFormData.priority} onValueChange={(val) => setReportFormData({...reportFormData, priority: val})}>
+                        <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger>
                         <SelectContent className="rounded-xl">
-                          {routes.map(r => <SelectItem key={String(r.id)} value={String(r.id)} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
+                          <SelectItem value="low" className="rounded-lg cursor-pointer text-blue-600">Low</SelectItem>
+                          <SelectItem value="medium" className="rounded-lg cursor-pointer text-amber-600">Medium</SelectItem>
+                          <SelectItem value="high" className="rounded-lg cursor-pointer text-red-600">High</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Subject</label>
+                    <Input placeholder="Brief title of the issue" value={reportFormData.subject} onChange={(e) => setReportFormData({...reportFormData, subject: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" required />
+                  </div>
+
+                  {(reportFormData.type === 'conductor' || reportFormData.type === 'driver' || reportFormData.type === 'bus') && (
+                    <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Name (Optional)</label>
+                        <Input placeholder="e.g. Ali Khan" value={reportFormData.conductorName} onChange={(e) => setReportFormData({...reportFormData, conductorName: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Bus Number (Optional)</label>
+                        <Input placeholder="e.g. LED-1234" value={reportFormData.busNumber} onChange={(e) => setReportFormData({...reportFormData, busNumber: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" />
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Description</label>
-                    <Textarea placeholder="More details..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl resize-none bg-slate-50 focus:bg-white dark:bg-slate-900" rows={3} required />
+                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Route Involved</label>
+                    <Select value={reportFormData.routeId} onValueChange={(val) => setReportFormData({...reportFormData, routeId: val})}>
+                      <SelectTrigger className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900"><SelectValue placeholder="Select Route (if applicable)" /></SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {routes.map(r => <SelectItem key={String(r.id)} value={String(r.id)} className="rounded-lg cursor-pointer">{r.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Contact Info</label>
-                    <Input placeholder="Phone or email (visible to others)" value={formData.contact} onChange={(e) => setFormData({...formData, contact: e.target.value})} className="h-11 rounded-xl bg-slate-50 focus:bg-white dark:bg-slate-900" required />
+                    <label className="text-sm font-semibold ml-1 text-slate-700 dark:text-slate-300">Description / Details</label>
+                    <Textarea placeholder="Please provide specific details to help us solve the issue..." value={reportFormData.description} onChange={(e) => setReportFormData({...reportFormData, description: e.target.value})} className="rounded-xl resize-none bg-slate-50 focus:bg-white dark:bg-slate-900" rows={4} required />
                   </div>
                   
-                  <Button type="submit" className="w-full h-12 rounded-xl text-md font-bold mt-4 shadow-lg shadow-primary/20">Submit Report</Button>
+                  <Button type="submit" className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-xl text-md font-bold mt-4 shadow-lg shadow-red-600/20 transition-all active:scale-95">Submit Detailed Report</Button>
                 </form>
-              )}
-            </DialogContent>
-          </Dialog>
+                )}
+              </DialogContent>
+            </Dialog>
+          </div>
+
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-in fade-in zoom-in-95 duration-500 delay-150">

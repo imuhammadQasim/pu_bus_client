@@ -51,6 +51,18 @@ const apiService = {
   async deleteLostAndFound(id) {
     return await Fetch.delete(`${this._url}/lost-found/${id}`);
   },
+  async createReport(reportData) {
+    return await Fetch.post(`${this._url}/reports`, reportData);
+  },
+  async getReports() {
+    return await Fetch.get(`${this._url}/reports`);
+  },
+  async getMyReports() {
+    return await Fetch.get(`${this._url}/reports/me`);
+  },
+  async updateReportStatus(id, status) {
+    return await Fetch.put(`${this._url}/reports/${id}`, { status });
+  },
 };
 
 export default apiService;
