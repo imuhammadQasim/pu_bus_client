@@ -125,7 +125,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
       </button>
 
       {/* Choose on Map Button */}
-      <button
+      {/* <button
         onClick={onToggleChooseOnMap}
         className={`px-3 py-2 rounded-lg text-xs font-medium shadow-md transition-all ${
           choosingOnMap
@@ -134,7 +134,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
         }`}
       >
         Choose on Map
-      </button>
+      </button> */}
     </div>
   );
 };
